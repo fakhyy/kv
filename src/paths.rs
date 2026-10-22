@@ -22,10 +22,10 @@ pub fn resolve_database_path(override_path: Option<PathBuf>) -> Result<PathBuf> 
 }
 
 pub fn ensure_parent_directory(path: &Path) -> Result<()> {
-    if let Some(parent) = path.parent() {
-        if !parent.as_os_str().is_empty() {
-            std::fs::create_dir_all(parent)?;
-        }
+    if let Some(parent) = path.parent()
+        && !parent.as_os_str().is_empty()
+    {
+        std::fs::create_dir_all(parent)?;
     }
     Ok(())
 }

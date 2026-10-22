@@ -20,10 +20,10 @@ pub fn initialize_database(path: &Path, mode: EncryptionMode) -> Result<()> {
         return Err(KvError::DatabaseExists(path.display().to_string()));
     }
 
-    if let Some(parent) = path.parent() {
-        if !parent.as_os_str().is_empty() {
-            fs::create_dir_all(parent)?;
-        }
+    if let Some(parent) = path.parent()
+        && !parent.as_os_str().is_empty()
+    {
+        fs::create_dir_all(parent)?;
     }
 
     let password = match mode {
@@ -55,10 +55,7 @@ pub fn initialize_database_with_password(
     }
 
     let result = (|| {
-        let conn = Connection::open_with_flags(
-            path,
-            OpenFlags::SQLITE_OPEN_READ_WRITE,
-        )?;
+        let conn = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_WRITE)?;
 
         if mode == EncryptionMode::Encrypted {
             let secret = password.ok_or(KvError::EmptyPassword)?;
@@ -112,10 +109,7 @@ pub fn open_database(path: &Path) -> Result<Connection> {
 }
 
 /// Password-injected variant for automated tests.
-pub fn open_encrypted_database_with_password(
-    path: &Path,
-    secret: &str,
-) -> Result<Connection> {
+pub fn open_encrypted_database_with_password(path: &Path, secret: &str) -> Result<Connection> {
     if secret.is_empty() {
         return Err(KvError::EmptyPassword);
     }
@@ -124,11 +118,9 @@ pub fn open_encrypted_database_with_password(
     apply_key(&conn, secret)?;
 
     // Force SQLCipher to read a database page before trusting the connection.
-    let validation = conn.query_row(
-        "SELECT count(*) FROM sqlite_master",
-        [],
-        |row| row.get::<_, i64>(0),
-    );
+    let validation = conn.query_row("SELECT count(*) FROM sqlite_master", [], |row| {
+        row.get::<_, i64>(0)
+    });
 
     if validation.is_err() {
         return Err(KvError::DatabaseUnlockFailed);
