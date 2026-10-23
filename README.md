@@ -10,6 +10,14 @@ cargo build --release
 
 The SQLCipher feature builds native dependencies, so the first build may take some time.
 
+## Installation
+
+Install directly from source code (cargo required).
+```bash
+cargo install --git https://github.com/fakhyy/kv.git
+```
+
+
 ## Usage
 
 ```bash
